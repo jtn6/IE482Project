@@ -34,7 +34,7 @@ The goal of this project is to design and implement an object sorting system usi
 
 ## Measures of Success
 - The system accureately detects and classifies objects based on color
-- The robot correctly sorys objects into the appropriate locationo
+- The robot correctly sorts objects into the appropriate location
 - The system operates consistently with minimal errors
 - The sorting process is clearly demonstrated in real time
 - Another user can follow the README instructions to run the system independently
