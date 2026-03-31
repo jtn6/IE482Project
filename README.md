@@ -1,4 +1,4 @@
-# {Object Sorting Robot}
+# Object Sorting Robot
 
 Team Members:
 - Jonathan Nguyen (jtn6@buffalo.edu)
@@ -33,7 +33,6 @@ The goal of this project is to design and implement an object sorting system usi
 
 
 ## Measures of Success
-{How will you know you succeeded?  If you were to receive partial credit, what should we look for?}
 - The system accureately detects and classifies objects based on color
 - The robot correctly sorys objects into the appropriate locationo
 - The system operates consistently with minimal errors
