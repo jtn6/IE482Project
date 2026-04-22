@@ -27,10 +27,11 @@ The implementation will involve developing the vision system, testing classifica
 - [x] Complete this proposal document.  *Due March 31*
 - [x] Develop object detection using OpenCV (color-based classification)
 - [x] Map object types to sorting decisions (left/right bins)
-- [ ] Build robot hardware (motor/servo and arduino setup)
-- [ ] Integrate vision system with sorting mechanism
-- [ ] Create progress report.  *Due April 21*
-- [ ] Test sorting accuracy and improve reliability
+- [x] Build robot hardware (motor/servo and arduino setup)
+- [x] Integrate vision system with sorting mechanism
+- [x] Create progress report.  *Due April 21*
+- [x] Test sorting accuracy and improve reliability
+- [ ] Draft hardware, conveyor, servo layout
 - [ ] Create final presentation.  *Due May 5*
 - [ ] Provide system documentation (README.md).  *Due May 15*
 
