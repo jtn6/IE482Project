@@ -31,14 +31,13 @@ Youtube Demo Here:
 ---
 
 
-##Installation Instructions
+## Installation Instructions
 
 ### 1. Clone the repository
 
 ```
 git clone https://github.com/jtn6/IE482Project
 cd IE482Project
-
 ```
 
 ### 2. Create and Activate a Virtual Environment
@@ -46,15 +45,12 @@ cd IE482Project
 ```
 python -m venv robotic_sorter
 robotic_sorter\Scripts\Activate
-
 ```
 
 ### 3. Install Required Python Libraries
 
 ```
-
 pip install opencv-python numpy pyserial
-
 ```
 
 ### 4. Arduino Setup
@@ -336,10 +332,10 @@ cv2.destroyAllWindows()
 
 The following resources were used during development:
 
-https://docs.opencv.org/
-https://www.arduino.cc/reference/en/
-https://pyserial.readthedocs.io/
-YouTube tutorials on OpenCV color detection and Arduino servo control
+- https://docs.opencv.org/
+- https://www.arduino.cc/reference/en/
+- https://pyserial.readthedocs.io/
+- YouTube tutorials on OpenCV color detection and Arduino servo control
 
 ---
 
@@ -352,7 +348,7 @@ If more time were available, several improvements could be made:
 
 ---
 
-#Initial Proposal
+# Initial Proposal:
 
 Team Members:
 - Jonathan Nguyen (jtn6@buffalo.edu)
