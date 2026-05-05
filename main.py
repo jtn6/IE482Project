@@ -1,9 +1,13 @@
+#import all necessary libraries, can add more as needed
+
 import cv2
 import numpy as np
 import serial
 import time
 
-print("Running red and blue detection")
+#running the detection of red and blue only, can change colors as desired
+
+print("Running red and blue detection") 
 
 camera = cv2.VideoCapture(0)
 
@@ -30,7 +34,7 @@ while True:
     # Get frame size
     frame_height, frame_width, _ = frame.shape
 
-    # Define ROI coordinates
+    # Define ROI coordinates within the camera frame (this creates a center box that will only detect what's inside it.)
     x1 = int(frame_width * 0.3)
     y1 = int(frame_height * 0.3)
     x2 = int(frame_width * 0.7)
@@ -39,15 +43,15 @@ while True:
     # Extract ROI
     roi = frame[y1:y2, x1:x2]
 
-    # Convert ROI to HSV
+    # Convert ROI to HSV values
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
-    # Blue range
+    # Blue range HSV values, can adjust as needed for different lighting conditions or shades of blue
     lower_blue = np.array([100, 180, 150])
     upper_blue = np.array([115, 255, 255])
     blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
-    # Red range
+    # Red range HSV values, red is tricky because it wraps around the hue spectrum, so we need two ranges to cover it. Can still adjust as needed for different lighting conditions or shades of red.
     lower_red_1 = np.array([0, 120, 70])
     upper_red_1 = np.array([10, 255, 255])
     lower_red_2 = np.array([170, 120, 70])
@@ -57,7 +61,7 @@ while True:
     red_mask_2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
     red_mask = red_mask_1 + red_mask_2
 
-    # Clean masks
+    # Clean masks (this opens two windows, one for the red mask and one for the blue mask, so you can see what the camera is detecting. You can close these windows once you have the HSV values dialed in and the detection working well, or keep them open for debugging purposes.)
     kernel = np.ones((5, 5), np.uint8)
     blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
     blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_CLOSE, kernel)
@@ -109,7 +113,7 @@ while True:
                 2
             )
 
-    # Decision logic
+    # Decision logic when red or blue is detected
     if red_detected and not blue_detected:
         decision = "LEFT"
     elif blue_detected and not red_detected:
@@ -120,7 +124,9 @@ while True:
         decision = "WAIT"
 
     # Only send when decision changes
-    if decision != last_decision:
+    # Only send actual sorting commands
+    # Do not send WAIT, so the servo holds its last position
+    if decision in ["LEFT", "RIGHT"] and decision != last_decision:
         arduino.write((decision + "\n").encode())
         print("Sent:", decision)
         last_decision = decision
@@ -140,7 +146,7 @@ while True:
     cv2.imshow("Color Detection", frame)
     cv2.imshow("Red Mask", red_mask)
     cv2.imshow("Blue Mask", blue_mask)
-
+    # Press 'q' to quit the program and close all windows, release the camera, and close the serial connection to the Arduino. This is important to free up resources and allow other programs to use the camera and serial port in the future without issues.
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
