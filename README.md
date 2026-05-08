@@ -22,11 +22,12 @@ The equipment needed for this project is/as follows:
 - SG90 Servo Motor
 - Straw
 
-An object is placed on a linear conveyor belt that moves objects downstream (in this case, I will be using small foam blocks colored red and blue). After the object moves into the region of interest in the camera frame, the system will then classify an object color. After an the color is identified, a sorting decision is then made and sent to the terminal "LEFT" or "RIGHT". The Arduino Uno then receives the command, and moves the servo arm with to knock the object off the belt.
+An object is placed on a linear conveyor belt that moves objects downstream (in this case, I will be using small foam blocks colored red and blue). After the object moves into the region of interest in the camera frame, the system will then classify an object color. After an the color is identified, a sorting decision is then made and sent to the terminal "LEFT" or "RIGHT". The Arduino Uno then receives the command, and moves the servo arm to deflect the the object off the belt, into its respective container.
 
 
 Youtube Demo Here:
 
+https://youtu.be/HYyeJFBxogo
 
 ---
 
@@ -67,10 +68,17 @@ Upload the following code to your Arduino Uno:
 Servo sorterServo;
 String command = "";
 
+const int REST_POS = 90;
+const int LEFT_POS = 30;
+const int RIGHT_POS = 150;
+
+const int TRAVEL_DELAY = 2000;  // time from camera ROI to servo
+const int TAP_TIME = 300;       // time servo stays out to hit object
+
 void setup() {
   Serial.begin(9600);
   sorterServo.attach(9);
-  sorterServo.write(90);  // start centered
+  sorterServo.write(REST_POS);
 }
 
 void loop() {
@@ -79,16 +87,22 @@ void loop() {
     command.trim();
 
     if (command == "LEFT") {
-      sorterServo.write(30);
+      delay(TRAVEL_DELAY);
+      sorterServo.write(LEFT_POS);
+      delay(TAP_TIME);
+      sorterServo.write(REST_POS);
     }
+
     else if (command == "RIGHT") {
-      sorterServo.write(150);
+      delay(TRAVEL_DELAY);
+      sorterServo.write(RIGHT_POS);
+      delay(TAP_TIME);
+      sorterServo.write(REST_POS);
     }
   }
 }
-
 ```
-
+After this is done, verify the code and upload it to the board.
 Make sure the servo is connected to pin 9 on the board, and the Arduino is connected via USB.
 
 ### 5. Python Setup (main.py code)
@@ -117,7 +131,8 @@ if not camera.isOpened():
     raise SystemExit
 
 last_decision = ""
-
+last_send_time = 0
+cooldown = 3.0  # seconds
 while True:
     success, frame = camera.read()
 
@@ -144,19 +159,17 @@ while True:
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
     # Blue range HSV values, can adjust as needed for different lighting conditions or shades of blue
-    lower_blue = np.array([100, 180, 150])
-    upper_blue = np.array([115, 255, 255])
+    lower_blue = np.array([98, 170, 110])
+    upper_blue = np.array([112, 230, 170])
     blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
     # Red range HSV values, red is tricky because it wraps around the hue spectrum, so we need two ranges to cover it. Can still adjust as needed for different lighting conditions or shades of red.
-    lower_red_1 = np.array([0, 120, 70])
-    upper_red_1 = np.array([10, 255, 255])
-    lower_red_2 = np.array([170, 120, 70])
-    upper_red_2 = np.array([180, 255, 255])
+   # Red cube HSV range
+    # Red HSV range
+    lower_red = np.array([170, 170, 120])
+    upper_red = np.array([180, 255, 190])
 
-    red_mask_1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
-    red_mask_2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
-    red_mask = red_mask_1 + red_mask_2
+    red_mask = cv2.inRange(hsv, lower_red, upper_red)
 
     # Clean masks (this opens two windows, one for the red mask and one for the blue mask, so you can see what the camera is detecting. You can close these windows once you have the HSV values dialed in and the detection working well, or keep them open for debugging purposes.)
     kernel = np.ones((5, 5), np.uint8)
@@ -222,11 +235,17 @@ while True:
 
     # Only send when decision changes
     # Only send actual sorting commands
-    # Do not send WAIT, so the servo holds its last position
-    if decision in ["LEFT", "RIGHT"] and decision != last_decision:
-        arduino.write((decision + "\n").encode())
-        print("Sent:", decision)
-        last_decision = decision
+    current_time = time.time()
+
+    if decision in ["LEFT", "RIGHT"]:
+        if decision != last_decision and current_time - last_send_time > cooldown:
+            arduino.write((decision + "\n").encode())
+            print("Sent:", decision)
+            last_decision = decision
+            last_send_time = current_time
+
+    elif decision == "WAIT":
+        last_decision = "WAIT"
 
     # Show decision
     cv2.putText(
@@ -243,8 +262,7 @@ while True:
     cv2.imshow("Color Detection", frame)
     cv2.imshow("Red Mask", red_mask)
     cv2.imshow("Blue Mask", blue_mask)
-
-# Press 'q' to quit the program and close all windows, release the camera, and close the serial connection to the Arduino. This is important to free up resources and allow other programs to use the camera and serial port in the future without issues.
+    # Press 'q' to quit the program and close all windows, release the camera, and close the serial connection to the Arduino. This is important to free up resources and allow other programs to use the camera and serial port in the future without issues.
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
