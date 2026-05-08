@@ -20,7 +20,8 @@ if not camera.isOpened():
     raise SystemExit
 
 last_decision = ""
-
+last_send_time = 0
+cooldown = 3.0  # seconds
 while True:
     success, frame = camera.read()
 
@@ -47,19 +48,17 @@ while True:
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
     # Blue range HSV values, can adjust as needed for different lighting conditions or shades of blue
-    lower_blue = np.array([100, 180, 150])
-    upper_blue = np.array([115, 255, 255])
+    lower_blue = np.array([98, 170, 110])
+    upper_blue = np.array([112, 230, 170])
     blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
     # Red range HSV values, red is tricky because it wraps around the hue spectrum, so we need two ranges to cover it. Can still adjust as needed for different lighting conditions or shades of red.
-    lower_red_1 = np.array([0, 120, 70])
-    upper_red_1 = np.array([10, 255, 255])
-    lower_red_2 = np.array([170, 120, 70])
-    upper_red_2 = np.array([180, 255, 255])
+   # Red cube HSV range
+    # Red HSV range
+    lower_red = np.array([170, 170, 120])
+    upper_red = np.array([180, 255, 190])
 
-    red_mask_1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
-    red_mask_2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
-    red_mask = red_mask_1 + red_mask_2
+    red_mask = cv2.inRange(hsv, lower_red, upper_red)
 
     # Clean masks (this opens two windows, one for the red mask and one for the blue mask, so you can see what the camera is detecting. You can close these windows once you have the HSV values dialed in and the detection working well, or keep them open for debugging purposes.)
     kernel = np.ones((5, 5), np.uint8)
@@ -125,11 +124,17 @@ while True:
 
     # Only send when decision changes
     # Only send actual sorting commands
-    # Do not send WAIT, so the servo holds its last position
-    if decision in ["LEFT", "RIGHT"] and decision != last_decision:
-        arduino.write((decision + "\n").encode())
-        print("Sent:", decision)
-        last_decision = decision
+    current_time = time.time()
+
+    if decision in ["LEFT", "RIGHT"]:
+        if decision != last_decision and current_time - last_send_time > cooldown:
+            arduino.write((decision + "\n").encode())
+            print("Sent:", decision)
+            last_decision = decision
+            last_send_time = current_time
+
+    elif decision == "WAIT":
+        last_decision = "WAIT"
 
     # Show decision
     cv2.putText(
