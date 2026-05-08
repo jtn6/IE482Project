@@ -35,7 +35,7 @@ while True:
     # Get frame size
     frame_height, frame_width, _ = frame.shape
 
-    # Define ROI coordinates within the camera frame (this creates a center box that will only detect what's inside it.)
+    # Define region of interest coordinates within the camera frame (this creates a center box that will only detect what's inside it.)
     x1 = int(frame_width * 0.3)
     y1 = int(frame_height * 0.3)
     x2 = int(frame_width * 0.7)
@@ -52,9 +52,8 @@ while True:
     upper_blue = np.array([112, 230, 170])
     blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
-    # Red range HSV values, red is tricky because it wraps around the hue spectrum, so we need two ranges to cover it. Can still adjust as needed for different lighting conditions or shades of red.
+    # Red range HSV detection values, red is tricky because it wraps around the hue spectrum, so we need two ranges to cover it. Can still adjust as needed for different lighting conditions or shades of red.
    # Red cube HSV range
-    # Red HSV range
     lower_red = np.array([170, 170, 120])
     upper_red = np.array([180, 255, 190])
 
@@ -75,7 +74,7 @@ while True:
     blue_detected = False
     decision = "WAIT"
 
-    # Draw ROI box
+    # Draw visible ROI box
     cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
     # Draw red objects
@@ -123,7 +122,6 @@ while True:
         decision = "WAIT"
 
     # Only send when decision changes
-    # Only send actual sorting commands
     current_time = time.time()
 
     if decision in ["LEFT", "RIGHT"]:
@@ -136,7 +134,7 @@ while True:
     elif decision == "WAIT":
         last_decision = "WAIT"
 
-    # Show decision
+    # Show sorting decision in termina;
     cv2.putText(
         frame,
         f"Decision: {decision}",
