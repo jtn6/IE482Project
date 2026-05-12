@@ -401,7 +401,7 @@ The implementation will involve developing the vision system, testing classifica
 - [x] Test sorting accuracy and improve reliability
 - [x] Draft hardware, conveyor, servo layout
 - [x] Create final presentation.  *Due May 5*
-- [ ] Provide system documentation (README.md).  *Due May 15*
+- [x] Provide system documentation (README.md).  *Due May 14*
 
 
 ## Measures of Success
